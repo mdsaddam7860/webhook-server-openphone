@@ -62,4 +62,57 @@ async function getMessageTemplates() {
   }
 }
 
-export { getContact, updatePhone, getMessageTemplates };
+async function searchContacts() {
+  try {
+    // const today = new Date();
+    // const yesterday = new Date(today);
+    // yesterday.setDate(today.getDate() - 1);
+
+    // const yesterdayISO = yesterday.toISOString();
+
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); // 1 hour in milliseconds
+
+    const oneHourAgoISO = oneHourAgo.toISOString();
+
+    const searchRequest = {
+      filterGroups: [
+        {
+          filters: [
+            {
+              propertyName: "lastmodifieddate",
+              operator: "GTE",
+              value: oneHourAgoISO,
+            },
+          ],
+        },
+      ],
+      properties: [
+        "firstname",
+        "phone",
+        "of_times_sms_sent",
+        "lastmodifieddate",
+      ],
+      limit: 100,
+    };
+
+    // ✅ HubSpot search endpoint
+    const response = await axios.post(
+      `https://api.hubapi.com/crm/v3/objects/contacts/search`,
+      searchRequest,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}`,
+        },
+      }
+    );
+
+    return response.data.results || [];
+  } catch (err) {
+    logger.error(`❌ Failed to search contacts from yesterday: ${err.message}`);
+    return [];
+  }
+}
+
+export { getContact, updatePhone, getMessageTemplates, searchContacts };

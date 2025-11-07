@@ -4,10 +4,13 @@ import {
   getContact,
   updatePhone,
   getMessageTemplates,
+  searchContacts,
 } from "./services/hubspotService.js";
 import { getMessages, sendMessage } from "./services/openphoneService.js";
 import { handleWebhook } from "./routes/webhook.js";
 import axios from "axios";
+
+import { syncToHubspot } from "./controllers/hubspot.controller.js";
 
 export {
   axios,
@@ -20,4 +23,6 @@ export {
   getMessages,
   sendMessage,
   handleWebhook,
+  searchContacts,
+  syncToHubspot,
 };

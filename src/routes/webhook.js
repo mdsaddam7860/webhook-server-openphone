@@ -11,7 +11,7 @@ import {
 const FROM_NUMBER = "+12016446523";
 
 // ✅ Main webhook handler
-async function handleWebhook(req, res) {
+async function handleWebhook2(req, res) {
   logger.info("📩 Webhook received");
   res.status(204).send();
 
@@ -106,6 +106,100 @@ async function handleWebhook(req, res) {
   });
 }
 
+// ✅ Webhook handler for single contact
+async function handleWebhook(contactPayload) {
+  try {
+    let payload = contactPayload;
+    if (typeof payload === "string") {
+      payload = JSON.parse(payload);
+    }
+
+    // New
+    const contactData = Array.isArray(payload) ? payload[0] : payload;
+    const objectId =
+      contactData.objectId ||
+      contactData.id ||
+      contactData.properties?.hs_object_id;
+
+    if (!objectId) {
+      logger.warn("❌ Missing objectId in webhook payload");
+      return;
+    }
+
+    logger.info(`📦 Processing contact with objectId: ${objectId}`);
+
+    // Fetch contact from HubSpot
+    const contact = await getContact(objectId);
+    if (!contact || !contact.properties) {
+      logger.warn(`❌ Contact not found in HubSpot: ${objectId}`);
+      return;
+    }
+
+    const firstName = contact.properties.firstname || "there";
+    const rawPhone = contact.properties.phone;
+
+    if (!rawPhone) {
+      logger.warn(`❌ No phone number found for contact ID ${objectId}`);
+      return;
+    }
+
+    // Format phone number (E.164)
+    const cleanNumber = rawPhone.replace(/\D/g, "");
+    let formattedPhone = rawPhone;
+
+    if (!rawPhone.startsWith("+")) {
+      if (cleanNumber.length === 10) {
+        formattedPhone = `+1${cleanNumber}`;
+      } else if (cleanNumber.length === 11 && cleanNumber.startsWith("1")) {
+        formattedPhone = `+${cleanNumber}`;
+      } else {
+        formattedPhone = `+1${cleanNumber}`;
+      }
+
+      logger.info(
+        `📞 Formatting phone number: ${rawPhone} → ${formattedPhone}`
+      );
+
+      // Update phone number in HubSpot
+      try {
+        await updatePhone(objectId, formattedPhone);
+        logger.info(`✅ Phone number updated in HubSpot for ID ${objectId}`);
+      } catch (err) {
+        logger.warn(`⚠️ Failed to update phone number: ${err.message}`);
+      }
+    }
+
+    // Check if user already replied in OpenPhone
+    const messages = await getMessages(formattedPhone);
+    const userReplied = messages.some((msg) => msg.to.includes(FROM_NUMBER));
+    if (userReplied) {
+      logger.info(`✅ User ${formattedPhone} has already replied`);
+      return;
+    }
+
+    // Get message template
+    const templates = await getMessageTemplates();
+    const templateText = templates.find(
+      (item) => item.message === contact.properties.of_times_sms_sent
+    )?.message_text;
+
+    if (!templateText) {
+      logger.warn(
+        `❌ No message template found for of_times_sms_sent: ${contact.properties.of_times_sms_sent}`
+      );
+      return;
+    }
+
+    // Personalize message
+    const messageContent = templateText.replace("{First Name}", firstName);
+
+    // Send SMS
+    await sendMessage(formattedPhone, messageContent);
+    logger.info(`✅ Message sent successfully to ${formattedPhone}`);
+  } catch (error) {
+    logger.error(`❌ Webhook processing failed: ${error.message}`);
+  }
+}
 // ✅ Attach the handler
 // router.post("/", handleWebhook);
 
