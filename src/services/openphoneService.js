@@ -1,7 +1,7 @@
 import { logger } from "../index.js";
 import axios from "axios";
-import dotenv from "dotenv";
-dotenv.config();
+// import d`otenv from "dotenv";
+// dotenv.config();`
 
 const FROM_NUMBER = "+12016446523";
 
