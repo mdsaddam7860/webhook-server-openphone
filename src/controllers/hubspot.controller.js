@@ -15,18 +15,17 @@ import {
 async function syncToHubspot() {
   let contacts = [];
   try {
+    // 🔍 Fetch contacts within window
     contacts = await searchContacts();
-    logger.info(`Contacts Lenght: ${contacts.length}`);
+    logger.info(`Contacts Length: ${contacts.length}`);
 
     for (const contact of contacts) {
-      // logger.info(`Contacts : ${JSON.stringify(contact)}`);
       try {
         await handleWebhook(contact);
       } catch (error) {
         logger.error(`Failed to sync contact to HubSpot`, error);
       }
     }
-    logger.info(`✅ Found ${contacts.length} contacts to sync to HubSpot`);
   } catch (error) {
     logger.error(`Failed to sync to HubSpot`, error);
     return;

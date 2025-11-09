@@ -5,7 +5,9 @@
   "description": "A webhook service that listens for incoming requests and forwards messages to OpenPhone API.",
   "main": "webhook.js",
   "scripts": {
+    "tunnel": "ngrok http 3100",
     "dev": "node src/webhook.js",
+    "dev-with-tunnel": "node src/webhook.js & ngrok http 3100",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

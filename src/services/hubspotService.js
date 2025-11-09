@@ -1,4 +1,4 @@
-import { logger } from "../index.js";
+import { logger, getLastSyncTime, saveLastSyncTime } from "../index.js";
 import axios from "axios";
 // import dotenv from "dotenv";
 // dotenv.config();
@@ -9,13 +9,13 @@ async function getContact(objectId) {
   try {
     const response = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}`,
+        Authorization: `Bearer ${process.env.HUBSPOT_ACCESS_TOKEN}`,
         "Content-Type": "application/json",
       },
     });
     return response.data;
   } catch (error) {
-    logger.error(`HubSpot contact fetch failed: ${error.message}`);
+    logger.error(`HubSpot contact fetch failed:`, error);
     throw error;
   }
 }
@@ -27,7 +27,7 @@ async function updatePhone(objectId, phone) {
       { properties: { phone } },
       {
         headers: {
-          Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}`,
+          Authorization: `Bearer ${process.env.HUBSPOT_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
         },
       }
@@ -44,7 +44,7 @@ async function getMessageTemplates() {
       "https://api.hubapi.com/crm/v3/objects/2-45109637?properties=message_,message_text&limit=100",
       {
         headers: {
-          Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}`,
+          Authorization: `Bearer ${process.env.HUBSPOT_ACCESS_TOKEN}`,
           "Content-Type": "application/json",
         },
       }
@@ -62,27 +62,79 @@ async function getMessageTemplates() {
   }
 }
 
+// const today = new Date();
+// const yesterday = new Date(today);
+// yesterday.setDate(today.getDate() - 1);
+
+// const yesterdayDateISO = yesterday.toISOString();
+// async function searchContacts() {
+//   try {
+//     const now = new Date();
+//     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); // 1 hour in milliseconds
+
+//     const oneHourAgoISO = oneHourAgo.toISOString();
+
+//     const searchRequest = {
+//       filterGroups: [
+//         {
+//           filters: [
+//             {
+//               propertyName: "text_delta",
+//               operator: "GTE",
+//               value: oneHourAgoISO,
+//             },
+//           ],
+//         },
+//       ],
+//       properties: [
+//         "firstname",
+//         "phone",
+//         "of_times_sms_sent",
+//         "lastmodifieddate",
+//       ],
+//       limit: 100,
+//     };
+
+//     // ✅ HubSpot search endpoint
+//     const response = await axios.post(
+//       `https://api.hubapi.com/crm/v3/objects/contacts/search`,
+//       searchRequest,
+//       {
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${process.env.HUBSPOT_ACCESS_TOKEN}`,
+//         },
+//       }
+//     );
+
+//     return response.data.results || [];
+//   } catch (err) {
+//     logger.error(`❌ Failed to search contacts from yesterday: ${err.message}`);
+//     return [];
+//   }
+// }
+
+// 2025-11-09T18:25:45.198Z
 async function searchContacts() {
   try {
-    // const today = new Date();
-    // const yesterday = new Date(today);
-    // yesterday.setDate(today.getDate() - 1);
+    const lastSyncTime = getLastSyncTime();
+    const currentSyncTime = new Date();
 
-    // const yesterdayISO = yesterday.toISOString();
-
-    const now = new Date();
-    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); // 1 hour in milliseconds
-
-    const oneHourAgoISO = oneHourAgo.toISOString();
+    console.log("lastSyncTime", lastSyncTime);
 
     const searchRequest = {
       filterGroups: [
         {
           filters: [
             {
-              propertyName: "lastmodifieddate",
+              propertyName: "text_delta",
               operator: "GTE",
-              value: oneHourAgoISO,
+              value: lastSyncTime.toISOString(),
+            },
+            {
+              propertyName: "text_delta",
+              operator: "LTE",
+              value: currentSyncTime.toISOString(),
             },
           ],
         },
@@ -96,21 +148,27 @@ async function searchContacts() {
       limit: 100,
     };
 
-    // ✅ HubSpot search endpoint
     const response = await axios.post(
-      `https://api.hubapi.com/crm/v3/objects/contacts/search`,
+      "https://api.hubapi.com/crm/v3/objects/contacts/search",
       searchRequest,
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}`,
+          Authorization: `Bearer ${process.env.HUBSPOT_ACCESS_TOKEN}`,
         },
       }
     );
 
+    logger.info(
+      `🔍 Searching contacts where text_delta between ${lastSyncTime.toISOString()} and ${currentSyncTime.toISOString()}`
+    );
+
+    // ✅ Save the current sync time only after successful fetch
+    saveLastSyncTime(currentSyncTime);
+
     return response.data.results || [];
   } catch (err) {
-    logger.error(`❌ Failed to search contacts from yesterday: ${err.message}`);
+    logger.error(`❌ Failed to search contacts: ${err.message}`);
     return [];
   }
 }

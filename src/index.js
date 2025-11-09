@@ -7,10 +7,11 @@ import {
   searchContacts,
 } from "./services/hubspotService.js";
 import { getMessages, sendMessage } from "./services/openphoneService.js";
-import { handleWebhook } from "./routes/webhook.js";
+import { handleWebhook, handleWebhook2 } from "./routes/webhook.js";
 import axios from "axios";
 
 import { syncToHubspot } from "./controllers/hubspot.controller.js";
+import { getLastSyncTime, saveLastSyncTime } from "./utils/lastSyncTime.js";
 
 export {
   axios,
@@ -25,4 +26,7 @@ export {
   handleWebhook,
   searchContacts,
   syncToHubspot,
+  handleWebhook2,
+  getLastSyncTime,
+  saveLastSyncTime,
 };

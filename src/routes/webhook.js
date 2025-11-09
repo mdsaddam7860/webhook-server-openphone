@@ -129,7 +129,8 @@ async function handleWebhook(contactPayload) {
     logger.info(`📦 Processing contact with objectId: ${objectId}`);
 
     // Fetch contact from HubSpot
-    const contact = await getContact(objectId);
+    // const contact = await getContact(objectId);
+    const contact = contactPayload;
     if (!contact || !contact.properties) {
       logger.warn(`❌ Contact not found in HubSpot: ${objectId}`);
       return;
@@ -175,6 +176,9 @@ async function handleWebhook(contactPayload) {
     if (userReplied) {
       logger.info(`✅ User ${formattedPhone} has already replied`);
       return;
+      // return res
+      //   .status(200)
+      //   .json({ success: true, message: "User has already replied" });
     }
 
     // Get message template
@@ -182,6 +186,10 @@ async function handleWebhook(contactPayload) {
     const templateText = templates.find(
       (item) => item.message === contact.properties.of_times_sms_sent
     )?.message_text;
+
+    logger.info(
+      `✅ Message template:${contact.properties.of_times_sms_sent} ---${templateText}`
+    );
 
     if (!templateText) {
       logger.warn(
@@ -197,10 +205,10 @@ async function handleWebhook(contactPayload) {
     await sendMessage(formattedPhone, messageContent);
     logger.info(`✅ Message sent successfully to ${formattedPhone}`);
   } catch (error) {
-    logger.error(`❌ Webhook processing failed: ${error.message}`);
+    logger.error(`❌ Webhook processing failed:`, error);
   }
 }
 // ✅ Attach the handler
 // router.post("/", handleWebhook);
 
-export { handleWebhook };
+export { handleWebhook, handleWebhook2 };
