@@ -1,8 +1,7 @@
-// import "./configs/config.js";
-import "./jobs/scheduler.js";
-
 import dotenv from "dotenv";
 dotenv.config();
+// import "./configs/config.js";
+import "./jobs/scheduler.js";
 
 import { app, logger, syncToHubspot } from "./index.js";
 
@@ -16,5 +15,5 @@ try {
     logger.info(`🚀 Server running on port ${PORT}`);
   });
 } catch (error) {
-  logger.error(`❌ Webhook error: ${error.message}`, error);
+  logger.error(`❌ Webhook error:`, error);
 }
