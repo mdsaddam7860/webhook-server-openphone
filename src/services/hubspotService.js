@@ -168,7 +168,7 @@ async function searchContacts() {
 
     return response.data.results || [];
   } catch (err) {
-    logger.error(`❌ Failed to search contacts: ${err.message}`);
+    logger.error(`❌ Failed to search contacts:`, err);
     return [];
   }
 }
