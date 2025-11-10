@@ -1,6 +1,6 @@
-import dotenv from "dotenv";
-dotenv.config();
-// import "./configs/config.js";
+// import dotenv from "dotenv";
+// dotenv.config();
+import "./configs/config.js";
 import "./jobs/scheduler.js";
 
 import { app, logger, syncToHubspot } from "./index.js";
