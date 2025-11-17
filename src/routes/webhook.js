@@ -69,6 +69,12 @@ async function handleWebhook2(req, res) {
         }
       }
 
+      // Check Condition for sending SMS
+      if (contact.properties.of_times_sms_sent !== 1) {
+        logger.info("Webhook skipped: of_times_sms_sent is not 1");
+        return;
+      }
+
       // ✅ Check if user already replied in OpenPhone
       const messages = await getMessages(toPhoneNumberFormatted);
       const userReplied = messages.some((msg) => msg.to.includes(FROM_NUMBER));
