@@ -21,7 +21,9 @@ async function syncToHubspot() {
 
     for (const contact of contacts) {
       try {
-        if (contact.properties.of_times_sms_sent !== 1) {
+        if (contact.properties.of_times_sms_sent === "1") {
+          continue;
+        } else {
           await handleWebhook(contact);
         }
       } catch (error) {

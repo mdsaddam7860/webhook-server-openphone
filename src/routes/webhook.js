@@ -12,7 +12,7 @@ const FROM_NUMBER = "+12016446523";
 
 // ✅ Main webhook handler
 async function handleWebhook2(req, res) {
-  logger.info("📩 Webhook received");
+  logger.info("📩 Webhook received in real time");
   res.status(204).send();
 
   // Process asynchronously to avoid HubSpot timeout
@@ -29,7 +29,9 @@ async function handleWebhook2(req, res) {
         return;
       }
 
-      logger.info(`📦 Processing contact with objectId: ${objectId}`);
+      logger.info(
+        `✅ Processing contact with objectId: ${objectId}  real time`
+      );
 
       // ✅ Fetch contact from HubSpot
       const contact = await getContact(objectId);
@@ -69,8 +71,8 @@ async function handleWebhook2(req, res) {
         }
       }
 
-      // Check Condition for sending SMS
-      if (contact.properties.of_times_sms_sent !== 1) {
+      // Check Condition for sending SMS, skip if it is not 1
+      if (contact.properties.of_times_sms_sent !== "1") {
         logger.info("Webhook skipped: of_times_sms_sent is not 1");
         return;
       }
