@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 5000;
 try {
   app.listen(PORT, () => {
     // if (process.env.NODE_ENV === "development") {
-    //   syncToHubspot();
+    // syncToHubspot();
     // }
     logger.info(`🚀 Server running on port ${PORT}`);
   });

@@ -21,11 +21,21 @@ async function syncToHubspot() {
 
     for (const contact of contacts) {
       try {
-        if (contact.properties.of_times_sms_sent === "1") {
+        const rawValue = contact?.properties?.of_times_sms_sent;
+
+        // 🚫 Skip undefined / null / non-numeric / first SMS
+        const timesSmsSent = Number(rawValue);
+
+        if (
+          rawValue == null || // undefined or null
+          Number.isNaN(timesSmsSent) ||
+          timesSmsSent === 1
+        ) {
+          logger.info(`Skipping contact ${contact?.id}: of_times_sms_sent=1`);
           continue;
-        } else {
-          await handleWebhook(contact);
         }
+
+        await handleWebhook(contact);
       } catch (error) {
         logger.error(`Failed to sync contact to HubSpot`, error);
       }
