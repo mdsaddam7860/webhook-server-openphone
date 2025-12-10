@@ -196,11 +196,21 @@ async function handleWebhook2(req, res) {
           `📞 Formatting phone number: ${rawPhone} → ${formattedPhone}`
         );
 
-        try {
-          await updatePhone(objectId, formattedPhone);
-        } catch (err) {
-          logger.warn(`⚠️ Failed to update phone: ${err.message}`);
-        }
+        // try {
+        //   if (rawPhone !== formattedPhone) {
+        //     await updatePhone(objectId, formattedPhone);
+        //   }
+        // } catch (err) {
+        //   logger.warn(`⚠️ Failed to update phone: ${err.message}`);
+        //   const status = err.response?.status;
+
+        //   if (status === 400 || status === 403) {
+        //     logger.warn(`Non-retryable HubSpot error: ${status}`);
+        //     return;
+        //   }
+
+        //   throw err; // only retry network / 5xx issues
+        // }
 
         // Check if user already replied
         const messages = await getMessages(formattedPhone);
@@ -415,7 +425,9 @@ async function handleWebhook(contactPayload) {
 
         // Update phone number in HubSpot
         try {
-          await updatePhone(objectId, formattedPhone);
+          if (rawPhone !== formattedPhone) {
+            await updatePhone(objectId, formattedPhone);
+          }
           logger.info(`✅ Phone number updated in HubSpot for ID ${objectId}`);
         } catch (err) {
           logger.warn(`⚠️ Failed to update phone number: ${err.message}`);
