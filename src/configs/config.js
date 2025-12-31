@@ -19,12 +19,12 @@ function getHubspotClient() {
   }
 
   if (process.env.HUBSPOT_ACCESS_TOKEN) {
-    hs_client = createClient({
+    return (hs_client = createClient({
       accessToken: process.env.HUBSPOT_ACCESS_TOKEN,
-    });
+    }));
   }
 
-  return hs_client;
+  return null;
 }
 
 export { hs_client, getHubspotClient };

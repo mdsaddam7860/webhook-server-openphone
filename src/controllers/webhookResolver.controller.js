@@ -1,4 +1,9 @@
-import { logger, getCompletedContacts, handleWebhook } from "../index.js";
+import {
+  logger,
+  getCompletedContacts,
+  handleWebhook,
+  getHubspotClient,
+} from "../index.js";
 const hs_client = getHubspotClient();
 
 const toBool = (value) => value === "true";
@@ -8,7 +13,7 @@ async function syncOnlyCompltedRecords() {
 
     const allContacts = await getCompletedContacts();
     logger.info(`Contacts Length: ${allContacts.length}`);
-
+    // return; // TODO remove after testing
     if (allContacts.length === 0) {
       logger.info(`No contacts to process`);
       return;
