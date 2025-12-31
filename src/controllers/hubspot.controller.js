@@ -13,7 +13,7 @@ import {
   getHubspotClient,
 } from "../index.js";
 
-const hs_client = getHubspotClient();
+// const hs_client = getHubspotClient();
 
 async function syncToHubspot() {
   let contacts = [];
@@ -39,6 +39,7 @@ async function syncToHubspot() {
         }
 
         await handleWebhook(contact);
+        const hs_client = getHubspotClient();
 
         const updateContact = await hs_client.contacts.updateContact(
           contact.id,

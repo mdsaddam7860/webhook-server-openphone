@@ -4,7 +4,7 @@ import {
   handleWebhook,
   getHubspotClient,
 } from "../index.js";
-const hs_client = getHubspotClient();
+// const hs_client = getHubspotClient();
 
 const toBool = (value) => value === "true";
 async function syncOnlyCompltedRecords() {
@@ -40,6 +40,7 @@ async function syncOnlyCompltedRecords() {
         }
 
         await handleWebhook(contact);
+        const hs_client = getHubspotClient();
 
         const updateContact = await hs_client.contacts.updateContact(
           contact.id,
