@@ -13,10 +13,11 @@ import axios from "axios";
 
 import { syncToHubspot } from "./controllers/hubspot.controller.js";
 import { getLastSyncTime, saveLastSyncTime } from "./utils/lastSyncTime.js";
-import { hs_client } from "./configs/config.js";
+import { hs_client, getHubspotClient } from "./configs/config.js";
 import { syncOnlyCompltedRecords } from "./controllers/webhookResolver.controller.js";
 
 export {
+  getHubspotClient,
   hs_client,
   axios,
   app,

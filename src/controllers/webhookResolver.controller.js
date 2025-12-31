@@ -1,9 +1,5 @@
-import {
-  logger,
-  hs_client,
-  getCompletedContacts,
-  handleWebhook,
-} from "../index.js";
+import { logger, getCompletedContacts, handleWebhook } from "../index.js";
+const hs_client = getHubspotClient();
 
 const toBool = (value) => value === "true";
 async function syncOnlyCompltedRecords() {

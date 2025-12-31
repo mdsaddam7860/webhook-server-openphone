@@ -10,9 +10,10 @@ import {
   sendMessage,
   handleWebhook,
   searchContacts,
-  hs_client,
+  getHubspotClient,
 } from "../index.js";
 
+const hs_client = getHubspotClient();
 async function syncToHubspot() {
   let contacts = [];
   try {

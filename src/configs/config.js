@@ -11,8 +11,20 @@
 
 import { createClient } from "@mohammadsaddam-dev/hubspot-toolkit";
 
-const hs_client = createClient({
-  accessToken: process.env.HUBSPOT_ACCESS_TOKEN,
-});
+let hs_client = null;
 
-export { hs_client };
+function getHubspotClient() {
+  if (hs_client) {
+    return hs_client;
+  }
+
+  if (process.env.HUBSPOT_ACCESS_TOKEN) {
+    hs_client = createClient({
+      accessToken: process.env.HUBSPOT_ACCESS_TOKEN,
+    });
+  }
+
+  return hs_client;
+}
+
+export { hs_client, getHubspotClient };

@@ -2,7 +2,7 @@ import {
   logger,
   getLastSyncTime,
   saveLastSyncTime,
-  hs_client,
+  getHubspotClient,
 } from "../index.js";
 import axios from "axios";
 // import dotenv from "dotenv";
@@ -207,6 +207,7 @@ async function getCompletedContacts() {
     let allContacts = [];
     const limit = 100;
     let after = null;
+    let hs_client = getHubspotClient();
 
     do {
       const contact = await hs_client.contacts.searchContacts(

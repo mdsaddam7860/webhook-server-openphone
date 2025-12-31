@@ -6,7 +6,7 @@ import {
   getMessageTemplates,
   getMessages,
   sendMessage,
-  hs_client,
+  getHubspotClient,
 } from "../index.js";
 
 const FROM_NUMBER = "+12016446523";
@@ -246,6 +246,8 @@ async function handleWebhook2(req, res) {
         // logger.info(`✅ SMS sent successfully to ${formattedPhone}`);
 
         // Update sync_completed here
+
+        let hs_client = getHubspotClient();
 
         if (contact?.id) {
           const updateContact = await hs_client.contacts.updateContact(
