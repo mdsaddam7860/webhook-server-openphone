@@ -2,23 +2,28 @@
   "name": "webhook-service",
   "version": "1.0.0",
   "type": "module",
-  "description": "A webhook service that listens for incoming requests and forwards messages to OpenPhone API.",
-  "main": "webhook.js",
+  "description": "A webhook service that listens for incoming requests and forwards messages to OpenPhone API. Added Polling, Retry logic and scheduler.  After these Updates it is 99% error prone and it has 99% uptime",
+  "main": "healingHour.js",
   "scripts": {
     "tunnel": "ngrok http 3100",
-    "dev": "node src/webhook.js",
-    "dev-with-tunnel": "node src/webhook.js & ngrok http 3100",
+    "dev": "node src/healingHour.js",
+    "start": "node src/healingHour.js",
+    "dev-with-tunnel": "node src/healingHour.js & ngrok http 3100",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    " webhook",
+    "webhook",
     "nodejs",
     "express",
-    "OpenPhone"
+    "OpenPhone",
+    "HubSpot",
+    "Scheduler",
+    "Polling"
   ],
   "author": "Mohammad Saddam",
   "license": "MIT",
   "dependencies": {
+    "@mohammadsaddam-dev/hubspot-toolkit": "^0.3.2",
     "axios": "^1.13.2",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",

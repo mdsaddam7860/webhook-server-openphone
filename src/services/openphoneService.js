@@ -33,7 +33,7 @@ async function getMessages(toNumber) {
 
 async function sendMessage(to, content) {
   try {
-    await axios.post(
+    const response = await axios.post(
       process.env.OPENPHONE_API_URL,
       { content, from: FROM_NUMBER, to: [to] },
       {
@@ -43,7 +43,12 @@ async function sendMessage(to, content) {
         },
       }
     );
-    logger.info(`✅ Message sent to ${to}`);
+
+    if (response) {
+      logger.info(
+        `✅ Message sent to ${to} : ${JSON.stringify(response.data)}`
+      );
+    }
   } catch (error) {
     logger.error(`❌ Failed to send message: ${error.message}`, error);
     return [];

@@ -6,6 +6,7 @@ import {
   getMessageTemplates,
   getMessages,
   sendMessage,
+  hs_client,
 } from "../index.js";
 
 const FROM_NUMBER = "+12016446523";
@@ -142,8 +143,9 @@ async function handleWebhook2(req, res) {
   setImmediate(async () => {
     const MAX_RETRIES = 3; // max retry attempts
     const RETRY_DELAY_MS = 5000; // initial delay in ms (5 seconds)
+    let attempt = 1;
 
-    async function processWebhook(attempt = 1) {
+    async function processWebhook() {
       try {
         let requestBody = req.body;
         if (typeof requestBody === "string") {
@@ -238,8 +240,21 @@ async function handleWebhook2(req, res) {
         const content = messageText.replace("{First Name}", firstName);
 
         // Send SMS
-        await sendMessage(formattedPhone, content);
-        logger.info(`✅ SMS sent successfully to ${formattedPhone}`);
+        const smsSent = await sendMessage(formattedPhone, content);
+        // logger.info(`✅ SMS sent successfully to ${formattedPhone}`);
+
+        // Update sync_completed here
+
+        if (contact?.id) {
+          const updateContact = await hs_client.contacts.updateContact(
+            contact?.id,
+            {
+              sync_completed: true,
+            }
+          );
+
+          logger.info(`Conact Updated: ${updateContact.id}`);
+        }
       } catch (error) {
         logger.error(
           `❌ Webhook processing failed on attempt ${attempt}: ${error.message}`
@@ -255,12 +270,12 @@ async function handleWebhook2(req, res) {
           );
         }
       } finally {
-        logger.info("✅ Webhook processing finished (attempted)");
+        logger.info(`✅ Webhook processing finished (attempted) : ${attempt}`);
       }
     }
 
     // Start processing
-    processWebhook();
+    await processWebhook();
   });
 }
 

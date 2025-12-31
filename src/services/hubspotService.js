@@ -1,10 +1,15 @@
-import { logger, getLastSyncTime, saveLastSyncTime } from "../index.js";
+import {
+  logger,
+  getLastSyncTime,
+  saveLastSyncTime,
+  hs_client,
+} from "../index.js";
 import axios from "axios";
 // import dotenv from "dotenv";
 // dotenv.config();
 
 async function getContact(objectId) {
-  const url = `https://api.hubapi.com/crm/v3/objects/contacts/${objectId}?properties=firstname,phone,hs_analytics_source,of_times_sms_sent`;
+  const url = `https://api.hubapi.com/crm/v3/objects/contacts/${objectId}?properties=firstname,phone,hs_analytics_source,of_times_sms_sent,sync_completed`;
 
   try {
     const response = await axios.get(url, {
@@ -173,4 +178,67 @@ async function searchContacts() {
   }
 }
 
-export { getContact, updatePhone, getMessageTemplates, searchContacts };
+async function getCompletedContacts() {
+  try {
+    const filterGroups = [
+      {
+        filters: [
+          {
+            propertyName: "of_times_sms_sent",
+            operator: "EQ",
+            value: "1",
+          },
+          {
+            propertyName: "sync_completed",
+            operator: "EQ",
+            value: "false",
+          },
+        ],
+      },
+    ];
+
+    const properties = [
+      "firstname",
+      "lastname",
+      "sync_completed",
+      "of_times_sms_sent",
+      "phone",
+    ];
+    let allContacts = [];
+    const limit = 100;
+    let after = null;
+
+    do {
+      const contact = await hs_client.contacts.searchContacts(
+        filterGroups,
+        properties,
+        limit,
+        after
+      );
+
+      allContacts.push(...contact.results);
+
+      if (contact?.paging?.next?.after) {
+        after = contact?.paging?.next?.after;
+      } else {
+        after = 0;
+      }
+    } while (after);
+
+    return allContacts;
+  } catch (error) {
+    logger.error(
+      `❌ Failed to fetch completed contacts:`,
+      error?.response?.data || error
+    );
+    return [];
+  }
+}
+
+export {
+  getContact,
+  updatePhone,
+  getMessageTemplates,
+  searchContacts,
+  getCompletedContacts,
+};

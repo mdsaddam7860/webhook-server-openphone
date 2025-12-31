@@ -1,7 +1,8 @@
 import cron from "node-cron";
-import { syncToHubspot, logger } from "../index.js";
+import { syncToHubspot, logger, syncOnlyCompltedRecords } from "../index.js";
 
 let isJobRunning = false;
+let isJobRunning2 = false;
 
 logger.info("✅ Scheduler started");
 
@@ -23,5 +24,27 @@ cron.schedule("0 * * * *", async () => {
   } finally {
     isJobRunning = false;
     logger.info("✅ syncToHubspot job finished");
+  }
+});
+
+cron.schedule("10 * * * * *", async () => {
+  // every hour minutes
+  if (isJobRunning2) {
+    logger.info("⏭ Previous job still running, skipping this run.");
+    return;
+  }
+
+  isJobRunning2 = true;
+  // logger.info(
+  //   "🚀 Starting sync whose  of_times_sms_sent is 1 and sync_completed is false job"
+  // );
+
+  try {
+    await syncOnlyCompltedRecords();
+  } catch (error) {
+    logger.error(`❌ Scheduler error: ${error.message}`, error);
+  } finally {
+    isJobRunning2 = false;
+    logger.info("✅ syncOnlyCompltedRecords job finished");
   }
 });
