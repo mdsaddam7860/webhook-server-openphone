@@ -27,8 +27,8 @@ cron.schedule("0 * * * *", async () => {
   }
 });
 
-cron.schedule("10 * * * * *", async () => {
-  // every hour minutes
+// Scheduler will Run Every 2 minute at the 10th second
+cron.schedule("10 */2 * * * *", async () => {
   if (isJobRunning2) {
     logger.info("⏭ Previous job still running, skipping this run.");
     return;

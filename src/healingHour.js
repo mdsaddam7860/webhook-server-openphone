@@ -1,12 +1,7 @@
 import "dotenv/config";
 import "./jobs/scheduler.js";
 
-import {
-  app,
-  logger,
-  // syncToHubspot,
-  // syncOnlyCompltedRecords,
-} from "./index.js";
+import { app, logger } from "./index.js";
 
 const PORT = process.env.PORT || 5000;
 

@@ -12,7 +12,6 @@ async function syncOnlyCompltedRecords() {
 
     const allContacts = await getCompletedContacts();
     logger.info(`Contacts Length: ${allContacts.length}`);
-    logger.info(`Contacts Length: ${JSON.stringify(allContacts[0], null, 2)}`);
 
     if (allContacts.length === 0) {
       logger.info(`No contacts to process`);

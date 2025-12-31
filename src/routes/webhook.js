@@ -10,6 +10,7 @@ import {
 } from "../index.js";
 
 const FROM_NUMBER = "+12016446523";
+const toBool = (value) => value === "true";
 
 // ✅ Main webhook handler
 // async function handleWebhook2(req, res) {
@@ -175,11 +176,12 @@ async function handleWebhook2(req, res) {
         }
 
         const timesSmsSent = Number(contact.properties.of_times_sms_sent);
+        const sync_completed = toBool(contact?.properties?.sync_completed);
 
         // Only process first SMS
-        if (!timesSmsSent || timesSmsSent !== 1) {
+        if (!timesSmsSent || timesSmsSent !== 1 || sync_completed) {
           logger.info(
-            `Skipping contact ${objectId}: times_sms_sent !== 1 (current: ${timesSmsSent})`
+            `Skipping contact ${objectId}: times_sms_sent !== 1 (current: ${timesSmsSent}) and sync_completed is ${sync_completed}`
           );
           return;
         }
