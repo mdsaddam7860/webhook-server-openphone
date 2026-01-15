@@ -352,8 +352,8 @@ function getISOTimestamp(minutesAgo) {
 async function getCompletedContacts() {
   try {
     // 🔒 Time window (direct calculation, no storage)
-    const startTimeISO = getISOTimestamp(15); // now - 15 min
-    const endTimeISO = getISOTimestamp(2); // now - 5 min
+    const startTimeISO = getISOTimestamp(11); // now - 11 min
+    const endTimeISO = getISOTimestamp(1); // now - 1 min
 
     logger.info(
       `🔎 Polling contacts modified between ${startTimeISO} and ${endTimeISO}`
