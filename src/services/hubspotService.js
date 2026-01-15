@@ -120,60 +120,173 @@ async function getMessageTemplates() {
 // }
 
 // 2025-11-09T18:25:45.198Z
+// async function searchContacts() {
+//   try {
+//     const lastSyncTime = getLastSyncTime();
+//     const currentSyncTime = new Date();
+
+//     console.log("lastSyncTime", lastSyncTime);
+
+//     const searchRequest = {
+//       filterGroups: [
+//         {
+//           filters: [
+//             {
+//               propertyName: "text_delta",
+//               operator: "GTE",
+//               value: lastSyncTime.toISOString(),
+//             },
+//             {
+//               propertyName: "text_delta",
+//               operator: "LTE",
+//               value: currentSyncTime.toISOString(),
+//             },
+//             {
+//               propertyName: "of_times_sms_sent",
+//               operator: "IN",
+//               values: [
+//                 "2",
+//                 "3",
+//                 "4",
+//                 "5",
+//                 "6",
+//                 "7",
+//                 "8",
+//                 "9",
+//                 "10",
+//                 "11",
+//                 "12",
+//                 "13",
+//                 "14",
+//                 "15",
+//               ],
+//             },
+//           ],
+//         },
+//       ],
+//       properties: [
+//         "firstname",
+//         "phone",
+//         "of_times_sms_sent",
+//         "lastmodifieddate",
+//       ],
+//       limit: 100,
+//     };
+
+//     const response = await axios.post(
+//       "https://api.hubapi.com/crm/v3/objects/contacts/search",
+//       searchRequest,
+//       {
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${process.env.HUBSPOT_ACCESS_TOKEN}`,
+//         },
+//       }
+//     );
+
+//     logger.info(
+//       `🔍 Searching contacts where text_delta between ${lastSyncTime.toISOString()} and ${currentSyncTime.toISOString()}`
+//     );
+
+//     // ✅ Save the current sync time only after successful fetch
+//     saveLastSyncTime(currentSyncTime);
+
+//     return response.data.results || [];
+//   } catch (err) {
+//     logger.error(`❌ Failed to search contacts:`, err);
+//     return [];
+//   }
+// }
+
 async function searchContacts() {
+  const allContacts = [];
+
   try {
     const lastSyncTime = getLastSyncTime();
     const currentSyncTime = new Date();
-
-    console.log("lastSyncTime", lastSyncTime);
-
-    const searchRequest = {
-      filterGroups: [
-        {
-          filters: [
-            {
-              propertyName: "text_delta",
-              operator: "GTE",
-              value: lastSyncTime.toISOString(),
-            },
-            {
-              propertyName: "text_delta",
-              operator: "LTE",
-              value: currentSyncTime.toISOString(),
-            },
-          ],
-        },
-      ],
-      properties: [
-        "firstname",
-        "phone",
-        "of_times_sms_sent",
-        "lastmodifieddate",
-      ],
-      limit: 100,
-    };
-
-    const response = await axios.post(
-      "https://api.hubapi.com/crm/v3/objects/contacts/search",
-      searchRequest,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.HUBSPOT_ACCESS_TOKEN}`,
-        },
-      }
-    );
 
     logger.info(
       `🔍 Searching contacts where text_delta between ${lastSyncTime.toISOString()} and ${currentSyncTime.toISOString()}`
     );
 
-    // ✅ Save the current sync time only after successful fetch
+    let after = undefined;
+
+    do {
+      const searchRequest = {
+        filterGroups: [
+          {
+            filters: [
+              {
+                propertyName: "text_delta",
+                operator: "GTE",
+                value: lastSyncTime.toISOString(),
+              },
+              {
+                propertyName: "text_delta",
+                operator: "LTE",
+                value: currentSyncTime.toISOString(),
+              },
+              {
+                propertyName: "of_times_sms_sent",
+                operator: "IN",
+                values: [
+                  "2",
+                  "3",
+                  "4",
+                  "5",
+                  "6",
+                  "7",
+                  "8",
+                  "9",
+                  "10",
+                  "11",
+                  "12",
+                  "13",
+                  "14",
+                  "15",
+                ],
+              },
+            ],
+          },
+        ],
+        properties: [
+          "firstname",
+          "phone",
+          "of_times_sms_sent",
+          "lastmodifieddate",
+        ],
+        limit: 100,
+        ...(after && { after }),
+      };
+
+      const response = await axios.post(
+        "https://api.hubapi.com/crm/v3/objects/contacts/search",
+        searchRequest,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.HUBSPOT_ACCESS_TOKEN}`,
+          },
+        }
+      );
+
+      const { results = [], paging } = response.data;
+
+      allContacts.push(...results);
+
+      logger.info(
+        `📄 Fetched ${results.length} contacts (total: ${allContacts.length})`
+      );
+
+      after = paging?.next?.after;
+    } while (after);
+
+    // ✅ Save delta only after full successful pagination
     saveLastSyncTime(currentSyncTime);
 
-    return response.data.results || [];
+    return allContacts;
   } catch (err) {
-    logger.error(`❌ Failed to search contacts:`, err);
+    logger.error("❌ Failed to search contacts:", err?.response?.data || err);
     return [];
   }
 }
@@ -232,74 +345,78 @@ async function searchContacts() {
 //   }
 // }
 
-async function getCompletedContacts({
-  startDate, // required or optional
-  endDate, // optional
-}) {
+function getISOTimestamp(minutesAgo) {
+  return new Date(Date.now() - minutesAgo * 60 * 1000).toISOString();
+}
+
+async function getCompletedContacts() {
   try {
-    const filters = [
+    // 🔒 Time window (direct calculation, no storage)
+    const startTimeISO = getISOTimestamp(15); // now - 15 min
+    const endTimeISO = getISOTimestamp(2); // now - 5 min
+
+    logger.info(
+      `🔎 Polling contacts modified between ${startTimeISO} and ${endTimeISO}`
+    );
+
+    const filterGroups = [
       {
-        propertyName: "of_times_sms_sent",
-        operator: "EQ",
-        value: 1,
-      },
-      {
-        propertyName: "sync_completed",
-        operator: "EQ",
-        value: false,
+        filters: [
+          {
+            propertyName: "of_times_sms_sent",
+            operator: "EQ",
+            value: "1",
+          },
+          {
+            propertyName: "sync_completed",
+            operator: "EQ",
+            value: "false",
+          },
+          {
+            propertyName: "hs_lastmodifieddate",
+            operator: "BETWEEN",
+            value: startTimeISO,
+            highValue: endTimeISO,
+          },
+        ],
       },
     ];
-
-    if (startDate) {
-      filters.push({
-        propertyName: "hs_lastmodifieddate",
-        operator: "GTE",
-        value: startDate,
-      });
-    }
-
-    if (endDate) {
-      filters.push({
-        propertyName: "hs_lastmodifieddate",
-        operator: "LTE",
-        value: endDate,
-      });
-    }
-
-    const filterGroups = [{ filters }];
 
     const properties = [
       "firstname",
       "lastname",
-      "sync_completed",
-      "of_times_sms_sent",
       "phone",
+      "of_times_sms_sent",
+      "sync_completed",
       "hs_lastmodifieddate",
     ];
 
     const limit = 100;
     let after;
-    const allContacts = [];
-
-    const hsClient = getHubspotClient();
+    let allContacts = [];
+    const hs_client = getHubspotClient();
 
     do {
-      const response = await hsClient.crm.contacts.searchApi.doSearch({
+      const response = await hs_client.contacts.searchContacts(
         filterGroups,
         properties,
         limit,
-        after,
-      });
+        after
+      );
 
-      allContacts.push(...response.results);
+      if (response?.results?.length) {
+        allContacts.push(...response.results);
+      }
+
       after = response?.paging?.next?.after;
     } while (after);
 
+    logger.info(`✅ Found ${allContacts.length} contacts to process`);
     return allContacts;
   } catch (error) {
     logger.error(
-      "❌ Failed to fetch completed contacts",
-      error?.response?.body || error
+      `❌ Failed to fetch completed contacts`,
+      error?.response?.data || error
     );
     return [];
   }
