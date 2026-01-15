@@ -5,15 +5,18 @@ import {
   getHubspotClient,
 } from "../index.js";
 // const hs_client = getHubspotClient();
+import { readSyncState, writeSyncState } from "../utils/syncState.js";
 
 const toBool = (value) => value === "true";
 async function syncOnlyCompltedRecords() {
   try {
-    // fetch contacts from hubspot which has of_times_sms_sent === 1 and sync_completed is false
+    const { contactsLastSync } = await readSyncState();
 
-    const allContacts = await getCompletedContacts();
-    logger.info(`Contacts Length: ${allContacts.length}`);
-    // return; // TODO remove after testing
+    const allContacts = await getCompletedContacts({
+      startDate: contactsLastSync,
+    });
+
+    if (!allContacts.length) return;
     if (allContacts.length === 0) {
       logger.info(`No contacts to process`);
       return;

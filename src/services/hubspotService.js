@@ -178,24 +178,95 @@ async function searchContacts() {
   }
 }
 
-async function getCompletedContacts() {
+// async function getCompletedContacts() {
+//   try {
+//     const filterGroups = [
+//       {
+//         filters: [
+//           {
+//             propertyName: "of_times_sms_sent",
+//             operator: "EQ",
+//             value: "1",
+//           },
+//           {
+//             propertyName: "sync_completed",
+//             operator: "EQ",
+//             value: "false",
+//           },
+//         ],
+//       },
+//     ];
+
+//     const properties = [
+//       "firstname",
+//       "lastname",
+//       "sync_completed",
+//       "of_times_sms_sent",
+//       "phone",
+//     ];
+//     let allContacts = [];
+//     const limit = 100;
+//     let after = undefined;
+//     let hs_client = getHubspotClient();
+
+//     do {
+//       const contact = await hs_client.contacts.searchContacts(
+//         filterGroups,
+//         properties,
+//         limit,
+//         after
+//       );
+
+//       allContacts.push(...contact.results);
+
+//       after = contact?.paging?.next?.after;
+//     } while (after !== undefined);
+
+//     return allContacts;
+//   } catch (error) {
+//     logger.error(
+//       `❌ Failed to fetch completed contacts:`,
+//       error?.response?.data || error
+//     );
+//     return [];
+//   }
+// }
+
+async function getCompletedContacts({
+  startDate, // required or optional
+  endDate, // optional
+}) {
   try {
-    const filterGroups = [
+    const filters = [
       {
-        filters: [
-          {
-            propertyName: "of_times_sms_sent",
-            operator: "EQ",
-            value: "1",
-          },
-          {
-            propertyName: "sync_completed",
-            operator: "EQ",
-            value: "false",
-          },
-        ],
+        propertyName: "of_times_sms_sent",
+        operator: "EQ",
+        value: 1,
+      },
+      {
+        propertyName: "sync_completed",
+        operator: "EQ",
+        value: false,
       },
     ];
+
+    if (startDate) {
+      filters.push({
+        propertyName: "hs_lastmodifieddate",
+        operator: "GTE",
+        value: startDate,
+      });
+    }
+
+    if (endDate) {
+      filters.push({
+        propertyName: "hs_lastmodifieddate",
+        operator: "LTE",
+        value: endDate,
+      });
+    }
+
+    const filterGroups = [{ filters }];
 
     const properties = [
       "firstname",
@@ -203,34 +274,32 @@ async function getCompletedContacts() {
       "sync_completed",
       "of_times_sms_sent",
       "phone",
+      "hs_lastmodifieddate",
     ];
-    let allContacts = [];
+
     const limit = 100;
-    let after = null;
-    let hs_client = getHubspotClient();
+    let after;
+    const allContacts = [];
+
+    const hsClient = getHubspotClient();
 
     do {
-      const contact = await hs_client.contacts.searchContacts(
+      const response = await hsClient.crm.contacts.searchApi.doSearch({
         filterGroups,
         properties,
         limit,
-        after
-      );
+        after,
+      });
 
-      allContacts.push(...contact.results);
-
-      if (contact?.paging?.next?.after) {
-        after = contact?.paging?.next?.after;
-      } else {
-        after = 0;
-      }
+      allContacts.push(...response.results);
+      after = response?.paging?.next?.after;
     } while (after);
 
     return allContacts;
   } catch (error) {
     logger.error(
-      `❌ Failed to fetch completed contacts:`,
-      error?.response?.data || error
+      "❌ Failed to fetch completed contacts",
+      error?.response?.body || error
     );
     return [];
   }

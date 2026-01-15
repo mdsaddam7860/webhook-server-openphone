@@ -185,6 +185,18 @@ async function handleWebhook2(req, res) {
           );
           return;
         }
+        let hs_client = getHubspotClient();
+
+        if (contact?.id) {
+          const updateContact = await hs_client.contacts.updateContact(
+            contact?.id,
+            {
+              sync_completed: true,
+            }
+          );
+
+          logger.info(`Conact Updated: ${updateContact.id}`);
+        }
 
         // Format phone number (E.164)
         const cleanNumber = rawPhone.replace(/\D/g, "");
@@ -246,19 +258,6 @@ async function handleWebhook2(req, res) {
         // logger.info(`✅ SMS sent successfully to ${formattedPhone}`);
 
         // Update sync_completed here
-
-        let hs_client = getHubspotClient();
-
-        if (contact?.id) {
-          const updateContact = await hs_client.contacts.updateContact(
-            contact?.id,
-            {
-              sync_completed: true,
-            }
-          );
-
-          logger.info(`Conact Updated: ${updateContact.id}`);
-        }
       } catch (error) {
         logger.error(
           `❌ Webhook processing failed on attempt ${attempt}: ${error.message}`
