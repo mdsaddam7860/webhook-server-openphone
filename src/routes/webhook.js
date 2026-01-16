@@ -477,7 +477,9 @@ async function handleWebhook(contactPayload) {
 
       // Send SMS
       await sendMessage(formattedPhone, messageContent);
-      logger.info(`✅ Message sent successfully to ${formattedPhone}`);
+      logger.info(
+        `✅ Message sent successfully to ${formattedPhone} for of_times_sms_sent: ${contact?.properties?.of_times_sms_sent}`
+      );
     } catch (error) {
       logger.error(
         `❌ Processing failed for contact ${

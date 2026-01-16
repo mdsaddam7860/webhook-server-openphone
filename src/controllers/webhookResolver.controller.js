@@ -5,16 +5,11 @@ import {
   getHubspotClient,
 } from "../index.js";
 // const hs_client = getHubspotClient();
-import { readSyncState, writeSyncState } from "../utils/syncState.js";
 
 const toBool = (value) => value === "true";
 async function syncOnlyCompltedRecords() {
   try {
-    const { contactsLastSync } = await readSyncState();
-
-    const allContacts = await getCompletedContacts({
-      startDate: contactsLastSync,
-    });
+    const allContacts = await getCompletedContacts();
 
     if (allContacts.length === 0) {
       logger.info(`No contacts to process`);

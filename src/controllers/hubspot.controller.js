@@ -51,7 +51,7 @@ async function syncToHubspot() {
         logger.info(
           `✅ sync_completed updated for contact ID ${
             contact.id
-          }: ${JSON.stringify(updateContact, null, 2)}`
+          }: ${JSON.stringify(updateContact)}`
         );
       } catch (error) {
         logger.error(`Failed to sync contact to HubSpot`, error);

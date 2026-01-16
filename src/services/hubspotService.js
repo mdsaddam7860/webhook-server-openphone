@@ -254,6 +254,7 @@ async function searchContacts() {
           "phone",
           "of_times_sms_sent",
           "lastmodifieddate",
+          "sync_completed",
         ],
         limit: 100,
         ...(after && { after }),
