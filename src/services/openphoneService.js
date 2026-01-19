@@ -51,7 +51,7 @@ async function sendMessage(to, content) {
     }
   } catch (error) {
     logger.error(`❌ Failed to send message: ${error.message}`, error);
-    return [];
+    throw error;
   }
 }
 

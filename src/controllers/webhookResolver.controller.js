@@ -38,20 +38,6 @@ async function syncOnlyCompltedRecords() {
         }
 
         await handleWebhook(contact);
-        const hs_client = getHubspotClient();
-
-        const updateContact = await hs_client.contacts.updateContact(
-          contact.id,
-          {
-            sync_completed: true,
-          }
-        );
-
-        logger.info(
-          `✅ sync_completed updated for contact ID ${
-            contact.id
-          }: ${JSON.stringify(updateContact, null, 2)}`
-        );
       } catch (error) {
         logger.error(
           `❌ syncOnlyCompltedRecords processing failed:`,
