@@ -476,9 +476,26 @@ async function handleWebhook(contactPayload) {
       const messageContent = templateText.replace("{First Name}", firstName);
 
       // Send SMS
-      await sendMessage(formattedPhone, messageContent);
+      const messageSent = await sendMessage(formattedPhone, messageContent);
+
+      if (messageSent) {
+        logger.info(
+          `✅ Message sent successfully to ${formattedPhone} for of_times_sms_sent: ${contact?.properties?.of_times_sms_sent}`
+        );
+      }
+
+      // Update Contact here
+
+      const hs_client = getHubspotClient();
+
+      const updateContact = await hs_client.contacts.updateContact(objectId, {
+        sync_completed: true,
+      });
+
       logger.info(
-        `✅ Message sent successfully to ${formattedPhone} for of_times_sms_sent: ${contact?.properties?.of_times_sms_sent}`
+        `✅ sync_completed updated for contact ID ${objectId}: ${JSON.stringify(
+          updateContact
+        )}`
       );
     } catch (error) {
       logger.error(

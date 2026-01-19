@@ -39,20 +39,6 @@ async function syncToHubspot() {
         }
 
         await handleWebhook(contact);
-        const hs_client = getHubspotClient();
-
-        const updateContact = await hs_client.contacts.updateContact(
-          contact.id,
-          {
-            sync_completed: true,
-          }
-        );
-
-        logger.info(
-          `✅ sync_completed updated for contact ID ${
-            contact.id
-          }: ${JSON.stringify(updateContact)}`
-        );
       } catch (error) {
         logger.error(`Failed to sync contact to HubSpot`, error);
       }
