@@ -4,7 +4,7 @@ import { syncToHubspot, logger, syncOnlyCompltedRecords } from "../index.js";
 let isJobRunning = false;
 let isJobRunning2 = false;
 
-logger.info("✅ Scheduler started");
+logger.info("✅ Scheduler Initialized Every Hour at minute 0 syncToHubspot");
 
 //  Scheduler Will Run Every hour at minute 0
 cron.schedule("0 * * * *", async () => {
@@ -26,6 +26,8 @@ cron.schedule("0 * * * *", async () => {
     logger.info("✅ syncToHubspot job finished");
   }
 });
+
+logger.info("✅ Scheduler Initialized syncOnlyCompltedRecords");
 
 // Scheduler will Run Every 2 minute at the 30th second
 cron.schedule("30 */2 * * * *", async () => {

@@ -353,12 +353,12 @@ function getISOTimestamp(minutesAgo) {
 async function getCompletedContacts() {
   try {
     // 🔒 Time window (direct calculation, no storage)
-    const startTimeISO = getISOTimestamp(11); // now - 11 min
-    const endTimeISO = getISOTimestamp(1); // now - 1 min
+    // const startTimeISO = getISOTimestamp(60 * 60 * 24); // now - 11 min
+    // const endTimeISO = getISOTimestamp(1); // now - 1 min
 
-    logger.info(
-      `🔎 Polling contacts modified between ${startTimeISO} and ${endTimeISO}`
-    );
+    // logger.info(
+    //   `🔎 Polling contacts modified between ${startTimeISO} and ${endTimeISO}`
+    // );
 
     const filterGroups = [
       {
@@ -373,12 +373,16 @@ async function getCompletedContacts() {
             operator: "EQ",
             value: "false",
           },
-          {
-            propertyName: "hs_lastmodifieddate",
-            operator: "BETWEEN",
-            value: startTimeISO,
-            highValue: endTimeISO,
-          },
+          // {
+          //   propertyName: "hs_lastmodifieddate",
+          //   operator: "GTE",
+          //   value: startTimeISO,
+          // },
+          // {
+          //   propertyName: "hs_lastmodifieddate",
+          //   operator: "LTE",
+          //   value: endTimeISO,
+          // },
         ],
       },
     ];

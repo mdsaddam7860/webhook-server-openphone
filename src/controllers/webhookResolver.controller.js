@@ -43,6 +43,29 @@ async function syncOnlyCompltedRecords() {
           `❌ syncOnlyCompltedRecords processing failed:`,
           error?.response?.data || error
         );
+        // Update Contact here
+
+        try {
+          const hs_client = getHubspotClient();
+
+          const updateContact = await hs_client.contacts.updateContact(
+            contact.id,
+            {
+              sync_completed: true,
+            }
+          );
+
+          logger.info(
+            `✅ sync_completed updated for contact ID ${
+              contact.id
+            }: ${JSON.stringify(updateContact)}`
+          );
+        } catch (error) {
+          logger.error(
+            `❌ syncOnlyCompltedRecords processing failed:`,
+            error?.response?.data || error
+          );
+        }
       }
     }
   } catch (error) {
