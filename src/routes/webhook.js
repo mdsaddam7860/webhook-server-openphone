@@ -452,11 +452,22 @@ async function handleWebhook(contactPayload) {
         }
       }
 
+      const hs_client = getHubspotClient(); // Iniitialize hubspot client
+
       // Check if user already replied
       const messages = await getMessages(formattedPhone);
       const userReplied = messages.some((msg) => msg.to.includes(FROM_NUMBER));
       if (userReplied) {
         logger.info(`✅ User ${formattedPhone} has already replied`);
+        const updateContact = await hs_client.contacts.updateContact(objectId, {
+          sync_completed: true,
+        });
+
+        logger.info(
+          `✅ sync_completed updated for contact ID ${objectId}: ${JSON.stringify(
+            updateContact
+          )}`
+        );
         return;
       }
 
@@ -485,8 +496,6 @@ async function handleWebhook(contactPayload) {
       }
 
       // Update Contact here
-
-      const hs_client = getHubspotClient();
 
       const updateContact = await hs_client.contacts.updateContact(objectId, {
         sync_completed: true,

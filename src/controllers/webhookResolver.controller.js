@@ -15,7 +15,7 @@ async function syncOnlyCompltedRecords() {
       logger.info(`No contacts to process`);
       return;
     }
-    logger.info(`Contacts Length: ${allContacts.length}`);
+    // logger.info(`Contacts Length: ${allContacts.length}`);
 
     for (const contact of allContacts) {
       try {
