@@ -37,9 +37,9 @@ cron.schedule("30 */2 * * * *", async () => {
   }
 
   isJobRunning2 = true;
-  // logger.info(
-  //   "🚀 Starting sync whose  of_times_sms_sent is 1 and sync_completed is false job"
-  // );
+  logger.info(
+    "🚀 Starting sync whose  of_times_sms_sent is 1 and sync_completed is false job"
+  );
 
   try {
     await syncOnlyCompltedRecords();
