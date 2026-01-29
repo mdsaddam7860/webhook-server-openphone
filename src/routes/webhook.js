@@ -522,6 +522,7 @@ async function handleWebhook(contactPayload) {
         logger.error(
           `❌ Max retries reached for contact ${contactPayload.id || "unknown"}`
         );
+        throw error;
       }
     }
   }
