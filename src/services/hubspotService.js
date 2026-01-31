@@ -40,6 +40,7 @@ async function updatePhone(objectId, phone) {
     logger.info(`✅ Phone updated for contact ID ${objectId}`);
   } catch (error) {
     logger.warn(`⚠️ Failed to update phone: ${error.message}`);
+    throw error;
   }
 }
 

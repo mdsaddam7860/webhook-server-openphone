@@ -27,7 +27,7 @@ async function getMessages(toNumber) {
       `❌ Failed to fetch OpenPhone messages: ${error.message}`,
       error
     );
-    return [];
+    throw error;
   }
 }
 
